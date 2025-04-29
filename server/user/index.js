@@ -5,6 +5,7 @@ const fs = require("fs");
 const path = require("path");
 const cookieParser = require("cookie-parser");
 const { sequelize } = require("./models");
+require("dotenv").config();
 
 const app = express();
 app.use(cors({
