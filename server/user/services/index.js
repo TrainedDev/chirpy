@@ -10,8 +10,19 @@ const cloudinaryUpload = async (filepath) => {
 
         const response = await uploadToCloudinary(filepath);
 
-        fs.unlink(filepath, err => {
-            if (err) return console.error(err);
+        const uploadPath = path.dirname(__dirname);
+        const folderPath = path.resolve(uploadPath, "uploads");
+
+        fs.readdir(folderPath, (err, files) => {
+            if (err) return console.error("upload folder not found", err);
+
+            files.forEach(file => {
+                const uploadFilePath = path.resolve(folderPath, file);
+
+                fs.unlink(uploadFilePath, err => {
+                    if (err) return console.log("failed to delete upload file", err);
+                });
+            });
         });
 
         return response;
@@ -36,9 +47,9 @@ const checkOauthUser = async (access_token) => {
         const oauthUser = await axios.get(`https://www.googleapis.com/oauth2/v2/userinfo`, {
             headers: {
                 Authorization: `Bearer ${access_token}`,
-              },
+            },
         });
-    
+
         const { id, picture, email, given_name } = oauthUser.data;
         const existUser = await userModel.findOne({ where: { oauth_id: id } });
         console.log(id)
@@ -59,7 +70,7 @@ const userCookies = (res, token) => {
     res.cookie("token", token, {
         httpOnly: true,
         secure: true,
-        maxAge: 1000*60*60*24
+        maxAge: 1000 * 60 * 60 * 24
     });
 };
 module.exports = { cloudinaryUpload, fileValidation, userCookies, checkOauthUser };
