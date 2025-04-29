@@ -1,19 +1,5 @@
 {
-  "projects": {
-    "user": {
-      "root": "server/user"
-    }
-  },
-  "builds": [
-    {
-      "src": "server/user/server.js",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [
-    {
-      "source": "/(.*)",
-      "destination": "server/user/server.js"
-    }
-  ]
+  "version": 2,
+  "builds": [{ "src": "server.js", "use": "@vercel/node" }],
+  "rewrites": [{ "source": "/(.*)", "destination": "server.js" }]
 }
