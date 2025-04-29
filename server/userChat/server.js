@@ -12,10 +12,19 @@ const path = require("path");
 const fs = require("fs");
 const app = express();
 
-app.use(cors({
-    origin: "https://chirpy-lake.vercel.app",
-    credentials: true
+const allowOrigin = ["http://localhost:5173", "https://chirpy-lake.vercel.app"];
+
+app.options("*", cors({
+  origin: (origin, callback) => {
+    if(origin || allowOrigin.includes(origin)){
+      callback(null, true);
+    }else{
+      callback(new Error("Not Allowed By cors"))
+    }
+  },
+  credentials: true,
 }));
+
 app.use(express.json());
 app.use(express.urlencoded({ limit: "70mb", extended: true }));
 app.use(cookiesParser());
@@ -33,7 +42,7 @@ if (!fs.existsSync(fileDir)) {
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: "https://chirpy-lake.vercel.app",
+        origin:  ["http://localhost:5173", "https://chirpy-lake.vercel.app"],
         credentials: true
     }
 });
