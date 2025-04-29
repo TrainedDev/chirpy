@@ -13,7 +13,7 @@ const fs = require("fs");
 const app = express();
 
 app.use(cors({
-    origin: "http://localhost:5173",
+    origin: ["http://localhost:5173", "https://chirpy-lake.vercel.app"],
     credentials: true
 }));
 app.use(express.json());
@@ -24,9 +24,9 @@ connectDb();
 const PORT = process.env.PORT || 3002;
 const fileDir = path.resolve(__dirname, "uploads");
 
-if(!fs.existsSync(fileDir)){
+if (!fs.existsSync(fileDir)) {
     fs.mkdir(fileDir, err => {
-        if(err) return console.log(err)
+        if (err) return console.log(err)
     })
 }
 
@@ -61,7 +61,7 @@ io.on("connection", (socket) => {
 
         await newUserChat.save();
         const msgData = { senderId, receiverId, message };
-         socket.broadcast.emit("send-message", msgData )
+        socket.broadcast.emit("send-message", msgData)
     });
 
 
