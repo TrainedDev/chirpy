@@ -14,6 +14,17 @@ const app = express();
 
 const allowOrigin = ["http://localhost:5173", "https://chirpy-lake.vercel.app"];
 
+app.use(cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true
+  }));
+
 app.options("*", cors({
   origin: (origin, callback) => {
     if(origin || allowOrigin.includes(origin)){
@@ -79,4 +90,4 @@ io.on("connection", (socket) => {
 
 app.get("/", (req, res) => res.send("server is live"));
 
-server.listen(3002, () => console.log("server is ready"));
+server.listen(PORT, () => console.log("server is ready"));
