@@ -113,9 +113,9 @@ const ChatApp = () => {
         console.error("Error fetching initial data:", error);
         toast.error("Failed to load data");
         if (error.response?.status === 401) {
-          // Cookies.remove("token");
-          alert(error.response?.data?.message || "Something went wrong");
-          // navigate("/login");
+          Cookies.remove("token");
+          alert(error.response?.data?.message || "Something went wrong Or Unauthorize");
+          navigate("/login");
         }
       }
     };

@@ -115,7 +115,6 @@ const fetchGoogleAccessToken = async (req, res) => {
 
 const fetchUserProfile = async (req, res) => {
     try {
-        console.log(req.userId, "i am herer")
         const id = req.userId;
         if (!id) return res.status(400).json("required details not found");
 

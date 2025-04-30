@@ -4,8 +4,8 @@ const jwt = require("jsonwebtoken");
 module.exports.socketAuth = (socket, next) => {
     try {
         const response = socket.handshake.headers;
-console.log(response)
         let token;
+        console.log(response.authorization)
 
         if (response.authorization) {
             token = response.authorization?.split(" ")[1];
@@ -14,7 +14,7 @@ console.log(response)
         }
 
         if (!token) return next(new Error("token missing! Access Denied"));
-        
+
         const decode = jwt.verify(token, process.env.JWT_SECRET);
 
         socket.userId = decode.user_id;
