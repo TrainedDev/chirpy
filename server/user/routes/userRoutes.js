@@ -2,7 +2,7 @@ const { Router } = require("express");
 const multer = require("multer");
 const upload = require("../middleware/multer");
 const UNEXPECT_FILE_TYPE = require("../constants");
-const { register, login, googleLogin, fetchGoogleAccessToken, fetchUserProfile, fetchAllUsers } = require("../controller/userController");
+const { register, login, googleLogin, fetchGoogleAccessToken, fetchUserProfile, fetchAllUsers, fetchToken, logout } = require("../controller/userController");
 const auth = require("../middleware/auth");
 
 const route = Router();
@@ -25,5 +25,7 @@ route.get("/google", googleLogin);
 route.get("/google/callback", fetchGoogleAccessToken);
 route.get("/user/profile", auth, fetchUserProfile);
 route.get("/fetch/users", fetchAllUsers);
+route.get("/fetch/token", fetchToken);
+route.get("/logout", logout);
 
 module.exports = { route };

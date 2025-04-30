@@ -5,7 +5,6 @@ module.exports.socketAuth = (socket, next) => {
     try {
         const headers = socket.handshake.headers;
         let token;
-
         if (headers.authorization) {
 
             token = headers.authorization.replace('Bearer ', '').trim();
@@ -36,6 +35,7 @@ module.exports.socketAuth = (socket, next) => {
 
 module.exports.auth = (req, res, next) => {
     try {
+
         const token = req.cookies?.token || req.headers?.authorization.split(" ")[1];
 
         if (!token) return res.status(401).json(" token missing!, access denied");

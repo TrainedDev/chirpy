@@ -28,6 +28,7 @@ const ChatApp = () => {
   const [userProfile, setUserProfile] = useState(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [fileUploading, setFileUploading] = useState(false);
+  const [token, setToken] = useState(null);
   // console.log("users",users)
   // Refs
   const socketRef = useRef(null);
@@ -48,17 +49,32 @@ const ChatApp = () => {
     },
   };
 
+  // fetch token
+  useEffect(() => {
+    const fetchToken = async () => {
+      const response = await axios.get(
+        `${API_CONFIG.baseUrl}/auth/fetch/token`,
+        {
+          withCredentials: true,
+        }
+      );
+      const token = response.data;
+      // console.log("check-token", token);
+      setToken(token);
+    };
+
+    fetchToken();
+  }, [activeChat, userProfile?.id]);
+
   // Initialize socket connection
   useEffect(() => {
-    const token = Cookies.get("token");
-
+    // console.log(token);
     socketRef.current = io(API_CONFIG.chatUrl, {
-      auth: { 
-        token: token
-    },
+      auth: { token },
       extraHeaders: {
         Authorization: `Bearer ${token}`,
       },
+      withCredentials: true,
     });
 
     socketRef.current.on("connect", () => {
@@ -112,20 +128,15 @@ const ChatApp = () => {
         );
         setUsers(
           usersResponse.data.data.filter(
-            (user) => user.id !== profileResponse.data.user.id
+            (user) => user.id !== profileResponse?.data.user.id
           )
         );
-        console.log(profileResponse, usersResponse);
       } catch (error) {
         console.error("Error fetching initial data:", error);
         toast.error("Failed to load data");
         if (error.response?.status === 401) {
-          Cookies.remove("token");
-          alert(
-            error.response?.data?.message ||
-              "Something went wrong Or Unauthorize"
-          );
-          navigate("/login");
+          alert(error.response?.data?.message || "Something went wrong");
+          // navigate("/login");
         }
       }
     };
@@ -135,23 +146,19 @@ const ChatApp = () => {
 
   // Fetch messages when active chat changes
   useEffect(() => {
-    const token = Cookies.get("token");
-
     if (activeChat && userProfile) {
       const fetchMessages = async () => {
         try {
           const response = await axios.get(
             `${API_CONFIG.chatUrl}${API_CONFIG.endpoints.messages}/${activeChat.id}`,
             {
-              auth: { 
-                token: token
-            },
-              headers: {
-                Authorization: `Bearer ${token}`, // Send the token in the Authorization header
+              auth: { token },
+              extraHeaders: {
+                Authorization: `Bearer ${token}`,
               },
+              withCredentials: true,
             }
           );
-
           setMessages(
             response.data.chats.map((chat) => ({
               ...chat,
@@ -171,7 +178,7 @@ const ChatApp = () => {
   // Auto-scroll to bottom of messages
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, token]);
 
   const handleSendMessage = () => {
     if (message.trim() === "" || !activeChat || !userProfile) return;
@@ -231,7 +238,9 @@ const ChatApp = () => {
 
   const handleLogout = async () => {
     try {
-      Cookies.remove("token");
+      await axios.get(`${API_CONFIG.baseUrl}/auth/logout`, {
+        withCredentials: true,
+      });
       navigate("/login");
       toast.success("Logged out successfully");
     } catch (error) {
@@ -384,7 +393,7 @@ const ChatApp = () => {
                   </button>
                   <button
                     className="text-gray-500 hover:text-gray-700"
-                    onClick={handleLogout}
+                    // onClick={handleLogout}                                 
                   >
                     <FiLogOut className="h-5 w-5" />
                   </button>
@@ -490,7 +499,9 @@ const ChatApp = () => {
                           msg.isMe ? "text-indigo-200" : "text-gray-500"
                         }`}
                       >
-                        {new Date(msg?.createdAt).toLocaleTimeString([], {
+                        {new Date(
+                          msg?.createdAt || Date.now()
+                        ).toLocaleTimeString([], {
                           hour: "2-digit",
                           minute: "2-digit",
                         })}

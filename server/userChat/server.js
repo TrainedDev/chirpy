@@ -13,7 +13,7 @@ const fs = require("fs");
 const app = express();
 
 app.use(cors({
-    origin: ["https://chirpy-lake.vercel.app"],
+    origin: ["https://chirpy-lake.vercel.app", "http://localhost:5173"],
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"],
 }));
@@ -35,7 +35,7 @@ if (!fs.existsSync(fileDir)) {
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: ["https://chirpy-lake.vercel.app"],
+        origin: ["https://chirpy-lake.vercel.app", "http://localhost:5173"],
         credentials: true,
         allowedHeaders: ["Authorization"],
     }

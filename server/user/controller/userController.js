@@ -103,7 +103,7 @@ const fetchGoogleAccessToken = async (req, res) => {
         if (!data) return res.status(400).json("failed to create oauth user");
 
         const token = jwt.sign({ user_id: data.id }, jwt_Secret, { expiresIn: "2h" });
-        
+
         userCookies(res, token);
 
         res.redirect(`${process.env.FRONTEND_URL}/dashboard`);
@@ -150,5 +150,32 @@ const fetchAllUsers = async (req, res) => {
         console.log(error.message);
         res.status(500).json({ msg: "failed to fetch all users", error: error.message })
     }
+};
+
+const fetchToken = async (req, res) => {
+    try {
+        const token = req.cookies.token;
+
+        if (!token) res.status(400).json("required token not found");
+
+        res.status(200).json(token);
+    } catch (error) {
+        res.status(500).json({ msg: "failed to fetch token", error: error.message })
+    }
+};
+
+const logout = (req, res) => {
+    try {
+
+        res.clearCookie("token", {
+            httpOnly: true,
+            secure: true,
+            sameSite: "None"
+        });
+
+        res.status(200).json({ msg: "logged Out" })
+    } catch (error) {
+        res.status(500).json({ msg: "failed to logout", error: error.message })
+    }
 }
-module.exports = { register, login, googleLogin, fetchGoogleAccessToken, fetchUserProfile, fetchAllUsers };
+module.exports = { register, login, googleLogin, fetchGoogleAccessToken, fetchUserProfile, fetchAllUsers, fetchToken, logout };
