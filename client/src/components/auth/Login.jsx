@@ -3,6 +3,7 @@ import axios from 'axios';
 import { FcGoogle } from 'react-icons/fc';
 // import { FaGithub } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 
 const LoginPage = () => {
   const [formData, setFormData] = useState({
@@ -19,6 +20,7 @@ const LoginPage = () => {
       [name]: value
     }));
   };
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -36,7 +38,7 @@ const LoginPage = () => {
 
       // Handle successful login (redirect, store token, etc.)
       console.log('Login successful:', response.data);
-      window.location.href = '/dashboard'; // Redirect after login
+      navigate("/dashboard");   // Redirect after login
 
     } catch (err) {
       setError(err.response?.data?.msg || err.message || 'Login failed');

@@ -9,32 +9,14 @@ require("pg");
 require("dotenv").config();
 
 const app = express();
+app.use((req, res, next) => {
+  console.log("Incoming Origin:", req.headers.origin);
+  next();
+});
 
-// const allowOrigin = ["http://localhost:5173", "https://chirpy-lake.vercel.app"];
-// app.use(cors({
-//   origin: function (origin, callback) {
-//     if (!origin || allowedOrigins.includes(origin)) {
-//       callback(null, true);
-//     } else {
-//       callback(new Error("Not allowed by CORS"));
-//     }
-//   },
-//   credentials: true
-// }));
-
-// app.options("*", cors({
-//   origin: (origin, callback) => {
-//     if(origin || allowOrigin.includes(origin)){
-//       callback(null, true);
-//     }else{
-//       callback(new Error("Not Allowed By cors"))
-//     }
-//   },
-//   credentials: true,
-// }));
 
 app.use(cors({
-  origin: ["http://localhost:5173", "https://chirpy-lake.vercel.app"],
+  origin: ["https://chirpy-git-main-yogeshs-projects-81876eec.vercel.app", "http://localhost:5173"],
   credentials: true
 }));
 app.use(express.json());
