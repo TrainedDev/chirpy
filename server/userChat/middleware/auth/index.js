@@ -3,19 +3,20 @@ const jwt = require("jsonwebtoken");
 
 module.exports.socketAuth = (socket, next) => {
     try {
-        const response = socket.handshake.headers;
+        const headers = socket.handshake.headers;
         let token;
 
-        if (response.authorization && response.authorization.startsWith("Bearer ")) {
-            token = response.authorization.split(" ")[1];
-        } else if (response.cookie) {
-            
-            const cookieToken = response.cookie
-                .split(";")
-                .find(c => c.trim().startsWith("token="));
+        if (headers.authorization) {
+
+            token = headers.authorization.replace('Bearer ', '').trim();
+
+        } else if (headers.cookie) {
+            const cookieToken = headers.cookie
+                .split(';')
+                .find(c => c.trim().startsWith('token='));
 
             if (cookieToken) {
-                token = cookieToken.split("=")[1];
+                token = cookieToken.split('=')[1];
             }
         }
 
@@ -28,7 +29,8 @@ module.exports.socketAuth = (socket, next) => {
         next();
 
     } catch (error) {
-        next(new Error("User Authorization Failed"));
+        console.error('JWT Error:', error.message);
+        next(new Error("User Authorization Failed", + error.message));
     }
 };
 

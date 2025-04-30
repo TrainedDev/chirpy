@@ -53,6 +53,9 @@ const ChatApp = () => {
     const token = Cookies.get("token");
 
     socketRef.current = io(API_CONFIG.chatUrl, {
+      auth: { 
+        token: token
+    },
       extraHeaders: {
         Authorization: `Bearer ${token}`,
       },
@@ -140,6 +143,9 @@ const ChatApp = () => {
           const response = await axios.get(
             `${API_CONFIG.chatUrl}${API_CONFIG.endpoints.messages}/${activeChat.id}`,
             {
+              auth: { 
+                token: token
+            },
               headers: {
                 Authorization: `Bearer ${token}`, // Send the token in the Authorization header
               },
