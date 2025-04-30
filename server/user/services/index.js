@@ -69,8 +69,8 @@ const checkOauthUser = async (access_token) => {
 const userCookies = (res, token) => {
     res.cookie("token", token, {
         httpOnly: true,
-        secure: true,
-        sameSite:"None",
+        // secure: true,
+        // sameSite:"None",
         maxAge: 1000 * 60 * 60 * 24
     });
 };
