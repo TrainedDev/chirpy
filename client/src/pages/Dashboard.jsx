@@ -64,7 +64,7 @@ const ChatApp = () => {
     };
 
     fetchToken();
-  }, [activeChat, userProfile?.id]);
+  }, [activeChat, userProfile?.id, navigate]);
 
   // Initialize socket connection
   useEffect(() => {
@@ -105,7 +105,7 @@ const ChatApp = () => {
         socketRef.current.disconnect();
       }
     };
-  }, [activeChat, userProfile?.id]);
+  }, [activeChat, userProfile?.id, token]);
 
   // Fetch initial data (profile and users)
   useEffect(() => {
@@ -146,7 +146,7 @@ const ChatApp = () => {
 
   // Fetch messages when active chat changes
   useEffect(() => {
-    if (activeChat && userProfile) {
+    if (activeChat && userProfile && token) {
       const fetchMessages = async () => {
         try {
           const response = await axios.get(
@@ -173,7 +173,7 @@ const ChatApp = () => {
 
       fetchMessages();
     }
-  }, [activeChat, userProfile]);
+  }, [activeChat, userProfile, token]);
 
   // Auto-scroll to bottom of messages
   useEffect(() => {
