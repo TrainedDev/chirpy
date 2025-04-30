@@ -16,7 +16,7 @@ app.use((req, res, next) => {
 
 
 app.use(cors({
-  origin: ["https://chirpy-git-main-yogeshs-projects-81876eec.vercel.app", "http://localhost:5173"],
+  origin: ["https://chirpy-lake.vercel.app"],
   credentials: true
 }));
 app.use(express.json());

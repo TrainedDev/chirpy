@@ -13,14 +13,14 @@ const fs = require("fs");
 const app = express();
 
 app.use((req, res, next) => {
-  console.log("Incoming Origin:", req.headers.origin);
-  next();
+    console.log("Incoming Origin:", req.headers.origin);
+    next();
 });
 
 
 app.use(cors({
-  origin: ["https://chirpy-git-main-yogeshs-projects-81876eec.vercel.app", "http://localhost:5173"],
-  credentials: true
+    origin: ["https://chirpy-lake.vercel.app"],
+    credentials: true
 }));
 
 app.use(express.json());
@@ -40,7 +40,7 @@ if (!fs.existsSync(fileDir)) {
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: ["http://localhost:5173", "https://chirpy-git-main-yogeshs-projects-81876eec.vercel.app"],
+        origin: ["https://chirpy-lake.vercel.app"],
         credentials: true
     }
 });

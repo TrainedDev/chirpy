@@ -3,6 +3,7 @@ import axios from 'axios';
 import { FcGoogle } from 'react-icons/fc';
 import { FaGithub } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 
 const RegisterPage = () => {
   const [formData, setFormData] = useState({
@@ -10,6 +11,8 @@ const RegisterPage = () => {
     email: '',
     password: '',
   });
+    const navigate = useNavigate();
+  
   const [file, setFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState('');
   const [loading, setLoading] = useState(false);
@@ -78,7 +81,7 @@ const RegisterPage = () => {
       setSuccess('Registration successful! Redirecting to login...');
       // Redirect to login after 2 seconds
       setTimeout(() => {
-        window.location.href = '/dashboard';
+        navigate("/dashboard");   // Redirect after login
       }, 2000);
 
     } catch (err) {
