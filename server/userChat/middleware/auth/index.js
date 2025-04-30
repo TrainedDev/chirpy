@@ -6,12 +6,19 @@ module.exports.socketAuth = (socket, next) => {
         const response = socket.handshake.headers;
         let token;
 
-        if (response.authorization) {
-            token = response.authorization?.split(" ")[1];
-        } else {
-            token = response.cookie?.split(";").find(c => c.trim().startsWith("token=")).split("=")[1];
+        if (response.authorization && response.authorization.startsWith("Bearer ")) {
+            token = response.authorization.split(" ")[1];
+        } else if (response.cookie) {
+            
+            const cookieToken = response.cookie
+                .split(";")
+                .find(c => c.trim().startsWith("token="));
+
+            if (cookieToken) {
+                token = cookieToken.split("=")[1];
+            }
         }
-        
+
         if (!token) return next(new Error("token missing! Access Denied"));
 
         const decode = jwt.verify(token, process.env.JWT_SECRET);
