@@ -11,7 +11,7 @@ module.exports.socketAuth = (socket, next) => {
         } else {
             token = response.cookie?.split(";").find(c => c.trim().startsWith("token=")).split("=")[1];
         }
-// console.log(token)
+        
         if (!token) return next(new Error("token missing! Access Denied"));
 
         const decode = jwt.verify(token, process.env.JWT_SECRET);
