@@ -108,13 +108,14 @@ const ChatApp = () => {
             (user) => user.id !== profileResponse.data.user.id
           )
         );
+        console.log(profileResponse, usersResponse)
       } catch (error) {
         console.error("Error fetching initial data:", error);
         toast.error("Failed to load data");
         if (error.response?.status === 401) {
-          Cookies.remove("token");
+          // Cookies.remove("token");
           alert(error.response?.data?.message || "Something went wrong");
-          navigate("/login");
+          // navigate("/login");
         }
       }
     };
