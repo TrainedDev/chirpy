@@ -28,7 +28,7 @@ const ChatApp = () => {
   const [userProfile, setUserProfile] = useState(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [fileUploading, setFileUploading] = useState(false);
-// console.log("users",users)
+  // console.log("users",users)
   // Refs
   const socketRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -112,7 +112,8 @@ const ChatApp = () => {
         console.error("Error fetching initial data:", error);
         toast.error("Failed to load data");
         if (error.response?.status === 401) {
-          localStorage.removeItem("token");
+          Cookies.remove("token");
+          alert(error.response?.data?.message || "Something went wrong");
           navigate("/login");
         }
       }
@@ -309,12 +310,12 @@ const ChatApp = () => {
                 }}
               >
                 {user.profileImg ? (
-                <img
-                src={user?.profileImg}
-                referrerPolicy="no-referrer"
-                alt={user?.username || 'Profile'}
-                className="h-10 w-10 rounded-full object-cover"
-              />              
+                  <img
+                    src={user?.profileImg}
+                    referrerPolicy="no-referrer"
+                    alt={user?.username || "Profile"}
+                    className="h-10 w-10 rounded-full object-cover"
+                  />
                 ) : (
                   <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
                     <FiUsers className="h-5 w-5 text-indigo-600" />
