@@ -69,6 +69,8 @@ const ChatApp = () => {
   // Initialize socket connection
   useEffect(() => {
     // console.log(token);
+    if (!token || !userProfile?.id) return console.log("token not found or not fetched yet");
+
     socketRef.current = io(API_CONFIG.chatUrl, {
       auth: { token },
       extraHeaders: {
@@ -102,7 +104,7 @@ const ChatApp = () => {
 
     return () => {
       if (socketRef.current) {
-        socketRef.current.disconnect();
+        socketRef.current?.disconnect();
       }
     };
   }, [activeChat, userProfile?.id, token]);
@@ -145,35 +147,65 @@ const ChatApp = () => {
   }, [navigate]);
 
   // Fetch messages when active chat changes
-  useEffect(() => {
-    if (activeChat && userProfile && token) {
-      const fetchMessages = async () => {
-        try {
-          const response = await axios.get(
-            `${API_CONFIG.chatUrl}${API_CONFIG.endpoints.messages}/${activeChat.id}`,
-            {
-              auth: { token },
-              extraHeaders: {
-                Authorization: `Bearer ${token}`,
-              },
-              withCredentials: true,
-            }
-          );
-          setMessages(
-            response.data.chats.map((chat) => ({
-              ...chat,
-              isMe: parseInt(chat.senderId) === userProfile.id,
-            }))
-          );
-        } catch (error) {
-          console.error("Error fetching messages:", error);
-          toast.error("Failed to load messages");
-        }
-      };
+  // useEffect(() => {
+  //   if (activeChat && userProfile && token) {
+  //     const fetchMessages = async () => {
+  //       try {
+  //         const response = await axios.get(
+  //           `${API_CONFIG.chatUrl}${API_CONFIG.endpoints.messages}/${activeChat.id}`,
+  //           {
+  //             auth: { token },
+  //             extraHeaders: {
+  //               Authorization: `Bearer ${token}`,
+  //             },
+  //             withCredentials: true,
+  //           }
+  //         );
+  //         setMessages(
+  //           response.data.chats.map((chat) => ({
+  //             ...chat,
+  //             isMe: parseInt(chat.senderId) === userProfile.id,
+  //           }))
+  //         );
+  //       } catch (error) {
+  //         console.error("Error fetching messages:", error);
+  //         toast.error("Failed to load messages");
+  //       }
+  //     };
 
-      fetchMessages();
+  //     fetchMessages();
+  //   }
+  // }, [activeChat, userProfile, token]);
+
+  useEffect(() => {
+  if (!activeChat || !userProfile || !token) return;
+
+  const fetchMessages = async () => {
+    try {
+      const response = await axios.get(
+        `${API_CONFIG.chatUrl}${API_CONFIG.endpoints.messages}/${activeChat.id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          withCredentials: true,
+        }
+      );
+      setMessages(
+        response.data.chats.map((chat) => ({
+          ...chat,
+          isMe: parseInt(chat.senderId) === userProfile.id,
+        }))
+      );
+    } catch (error) {
+      console.error("Error fetching messages:", error);
+      toast.error("Failed to load messages");
     }
-  }, [activeChat, userProfile, token]);
+  };
+
+  fetchMessages();
+}, [activeChat, userProfile, token]);
+
 
   // Auto-scroll to bottom of messages
   useEffect(() => {
