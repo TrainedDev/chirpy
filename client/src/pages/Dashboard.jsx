@@ -50,8 +50,13 @@ const ChatApp = () => {
 
   // Initialize socket connection
   useEffect(() => {
+    const token = Cookies.get("token");
+
     socketRef.current = io(API_CONFIG.chatUrl, {
-      withCredentials: true,
+      extraHeaders: {
+        Authorization: `Bearer ${token}`, // Attach the token to the Authorization header
+      },
+      withCredentials: true, // Send cookies with the request
     });
 
     socketRef.current.on("connect", () => {
@@ -108,13 +113,16 @@ const ChatApp = () => {
             (user) => user.id !== profileResponse.data.user.id
           )
         );
-        console.log(profileResponse, usersResponse)
+        console.log(profileResponse, usersResponse);
       } catch (error) {
         console.error("Error fetching initial data:", error);
         toast.error("Failed to load data");
         if (error.response?.status === 401) {
           Cookies.remove("token");
-          alert(error.response?.data?.message || "Something went wrong Or Unauthorize");
+          alert(
+            error.response?.data?.message ||
+              "Something went wrong Or Unauthorize"
+          );
           navigate("/login");
         }
       }
@@ -128,10 +136,14 @@ const ChatApp = () => {
     if (activeChat && userProfile) {
       const fetchMessages = async () => {
         try {
+          const token = Cookies.get("token");
           const response = await axios.get(
             `${API_CONFIG.chatUrl}${API_CONFIG.endpoints.messages}/${activeChat.id}`,
             {
-              withCredentials: true,
+              headers: {
+                Authorization: `Bearer ${token}`, // Attach the token to the Authorization header
+              },
+              withCredentials: true, // Make sure to send cookies with the request
             }
           );
 
