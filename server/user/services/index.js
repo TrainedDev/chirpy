@@ -71,7 +71,8 @@ const userCookies = (res, token) => {
         httpOnly: true,
         secure: true,
         sameSite:"None",
-        maxAge: 1000 * 60 * 60 * 24
+        maxAge: 1000 * 60 * 60 * 24,
+        domain: ".vercel.app",
     });
 };
 module.exports = { cloudinaryUpload, fileValidation, userCookies, checkOauthUser };
