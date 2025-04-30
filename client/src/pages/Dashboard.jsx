@@ -1,12 +1,19 @@
-import { useState, useEffect, useRef } from 'react';
-import { FiMenu, FiSearch, FiMessageSquare, FiUsers, FiSettings, FiLogOut } from 'react-icons/fi';
-import { IoMdSend } from 'react-icons/io';
-import { BsEmojiSmile, BsPaperclip } from 'react-icons/bs';
-import { RiChatNewLine } from 'react-icons/ri';
-import { useNavigate } from 'react-router-dom';
-import { toast } from 'react-hot-toast';
-import axios from 'axios';
-import { io } from 'socket.io-client';
+import { useState, useEffect, useRef } from "react";
+import {
+  FiMenu,
+  FiSearch,
+  FiMessageSquare,
+  FiUsers,
+  FiSettings,
+  FiLogOut,
+} from "react-icons/fi";
+import { IoMdSend } from "react-icons/io";
+import { BsEmojiSmile, BsPaperclip } from "react-icons/bs";
+import { RiChatNewLine } from "react-icons/ri";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-hot-toast";
+import axios from "axios";
+import { io } from "socket.io-client";
 import Cookies from "js-cookie";
 
 const ChatApp = () => {
@@ -14,19 +21,19 @@ const ChatApp = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [activeChat, setActiveChat] = useState(null);
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
   const [users, setUsers] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [userProfile, setUserProfile] = useState(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [fileUploading, setFileUploading] = useState(false);
-  
+// console.log("users",users)
   // Refs
   const socketRef = useRef(null);
   const fileInputRef = useRef(null);
   const messagesEndRef = useRef(null);
-  
+
   const navigate = useNavigate();
 
   // API configuration
@@ -34,32 +41,39 @@ const ChatApp = () => {
     baseUrl: import.meta.env.VITE_API_BASE_URL,
     chatUrl: import.meta.env.VITE_API_SOCKET_BASE_URL,
     endpoints: {
-      profile: '/auth/user/profile',
-      allUsers: '/auth/fetch/users',
-      messages: '/user/messages',
-      upload: '/user/upload/files',
-    }
+      profile: "/auth/user/profile",
+      allUsers: "/auth/fetch/users",
+      messages: "/user/messages",
+      upload: "/user/upload/files",
+    },
   };
 
   // Initialize socket connection
   useEffect(() => {
     socketRef.current = io(API_CONFIG.chatUrl, {
-      withCredentials: true
+      withCredentials: true,
     });
 
-    socketRef.current.on('connect', () => {
-      console.log('Connected to socket server');
+    socketRef.current.on("connect", () => {
+      console.log("Connected to socket server");
     });
 
-    socketRef.current.on('send-message', (newMessage) => {
+    socketRef.current.on("send-message", (newMessage) => {
       // Handle incoming messages in real-time
-      console.log("newMessage",newMessage)
-      if ((newMessage.senderId === activeChat?.id && newMessage.receiverId === userProfile.id) || 
-          (newMessage.receiverId === activeChat?.id && newMessage.senderId === userProfile.id)) {
-        setMessages(prev => [...prev, {
-          ...newMessage,
-          isMe: newMessage.senderId === userProfile.id
-        }]);
+      console.log("newMessage", newMessage);
+      if (
+        (newMessage.senderId === activeChat?.id &&
+          newMessage.receiverId === userProfile.id) ||
+        (newMessage.receiverId === activeChat?.id &&
+          newMessage.senderId === userProfile.id)
+      ) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            ...newMessage,
+            isMe: newMessage.senderId === userProfile.id,
+          },
+        ]);
       }
     });
 
@@ -75,22 +89,31 @@ const ChatApp = () => {
     const fetchInitialData = async () => {
       try {
         // Fetch user profile
-        const profileResponse = await axios.get(`${API_CONFIG.baseUrl}${API_CONFIG.endpoints.profile}`, {
-         withCredentials: true
-        });
+        const profileResponse = await axios.get(
+          `${API_CONFIG.baseUrl}${API_CONFIG.endpoints.profile}`,
+          {
+            withCredentials: true,
+          }
+        );
         setUserProfile(profileResponse.data.user);
         // Fetch all users
-        const usersResponse = await axios.get(`${API_CONFIG.baseUrl}${API_CONFIG.endpoints.allUsers}`, {
-          withCredentials: true
-        });
-        setUsers(usersResponse.data.data.filter(user => user.id !== profileResponse.data.user.id));
-
+        const usersResponse = await axios.get(
+          `${API_CONFIG.baseUrl}${API_CONFIG.endpoints.allUsers}`,
+          {
+            withCredentials: true,
+          }
+        );
+        setUsers(
+          usersResponse.data.data.filter(
+            (user) => user.id !== profileResponse.data.user.id
+          )
+        );
       } catch (error) {
-        console.error('Error fetching initial data:', error);
-        toast.error('Failed to load data');
+        console.error("Error fetching initial data:", error);
+        toast.error("Failed to load data");
         if (error.response?.status === 401) {
-          localStorage.removeItem('token');
-          navigate('/login');
+          localStorage.removeItem("token");
+          navigate("/login");
         }
       }
     };
@@ -104,19 +127,21 @@ const ChatApp = () => {
       const fetchMessages = async () => {
         try {
           const response = await axios.get(
-            `${API_CONFIG.chatUrl}${API_CONFIG.endpoints.messages}/${activeChat.id}`, 
+            `${API_CONFIG.chatUrl}${API_CONFIG.endpoints.messages}/${activeChat.id}`,
             {
-              withCredentials: true
+              withCredentials: true,
             }
           );
 
-          setMessages(response.data.chats.map(chat => ({
-            ...chat,
-            isMe: parseInt(chat.senderId) === userProfile.id
-          })));
+          setMessages(
+            response.data.chats.map((chat) => ({
+              ...chat,
+              isMe: parseInt(chat.senderId) === userProfile.id,
+            }))
+          );
         } catch (error) {
-          console.error('Error fetching messages:', error);
-          toast.error('Failed to load messages');
+          console.error("Error fetching messages:", error);
+          toast.error("Failed to load messages");
         }
       };
 
@@ -126,30 +151,30 @@ const ChatApp = () => {
 
   // Auto-scroll to bottom of messages
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   const handleSendMessage = () => {
-    if (message.trim() === '' || !activeChat || !userProfile) return;
+    if (message.trim() === "" || !activeChat || !userProfile) return;
 
     const newMessage = {
       // senderId: userProfile._id,
       receiverId: activeChat.id,
       message: message.trim(),
       // timestamp: new Date().toISOString(),
-      isMe: true
+      isMe: true,
     };
 
     // Send message via socket
-    socketRef.current.emit('messages', {
+    socketRef.current.emit("messages", {
       // senderId: userProfile._id,
       receiverId: activeChat.id,
-      message: message.trim()
+      message: message.trim(),
     });
 
     // Optimistically update UI
-    setMessages(prev => [...prev, newMessage]);
-    setMessage('');
+    setMessages((prev) => [...prev, newMessage]);
+    setMessage("");
   };
 
   const handleFileUpload = async (e) => {
@@ -158,53 +183,53 @@ const ChatApp = () => {
 
     // Validate file size (100MB limit)
     if (file.size > 100 * 1024 * 1024) {
-      toast.error('File size exceeds 100MB limit');
+      toast.error("File size exceeds 100MB limit");
       return;
     }
 
     setFileUploading(true);
     try {
       const formData = new FormData();
-      formData.append('files', file);
-      formData.append('receiverId', activeChat.id);
+      formData.append("files", file);
+      formData.append("receiverId", activeChat.id);
 
       const response = await axios.post(
         `${API_CONFIG.chatUrl}${API_CONFIG.endpoints.upload}`,
         formData,
         {
-         withCredentials: true
+          withCredentials: true,
         }
       );
-      toast.success('File sent successfully');
+      toast.success("File sent successfully");
     } catch (error) {
-      console.error('File upload error:', error);
-      toast.error('Failed to upload file');
+      console.error("File upload error:", error);
+      toast.error("Failed to upload file");
     } finally {
       setFileUploading(false);
-      e.target.value = ''; // Reset file input
+      e.target.value = ""; // Reset file input
     }
   };
 
   const handleLogout = async () => {
     try {
       Cookies.remove("token");
-      navigate('/login');
-      toast.success('Logged out successfully');
+      navigate("/login");
+      toast.success("Logged out successfully");
     } catch (error) {
-      console.error('Logout error:', error);
-      toast.error('Logout failed');
+      console.error("Logout error:", error);
+      toast.error("Logout failed");
     }
   };
 
-  const filteredUsers = users.filter(user =>
+  const filteredUsers = users.filter((user) =>
     user.username.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const getRandomAvatar = (id) => {
-    const gender = id % 2 === 0 ? 'men' : 'women';
+    const gender = id % 2 === 0 ? "men" : "women";
     return `https://randomuser.me/api/portraits/${gender}/${id % 100}.jpg`;
   };
- console.log(messages)
+  console.log(messages);
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">
       {/* Mobile sidebar toggle */}
@@ -217,8 +242,8 @@ const ChatApp = () => {
 
       {/* Sidebar */}
       <div
-        className={`${sidebarOpen ? 'w-64' : 'w-20'} 
-        ${mobileSidebarOpen ? 'block fixed inset-y-0 left-0 z-40' : 'hidden'} 
+        className={`${sidebarOpen ? "w-64" : "w-20"} 
+        ${mobileSidebarOpen ? "block fixed inset-y-0 left-0 z-40" : "hidden"} 
         md:block bg-white border-r border-gray-200 transition-all duration-300`}
       >
         <div className="flex flex-col h-full">
@@ -227,7 +252,9 @@ const ChatApp = () => {
             {sidebarOpen ? (
               <div className="flex items-center">
                 <FiMessageSquare className="h-6 w-6 text-indigo-600" />
-                <span className="ml-2 text-xl font-bold text-gray-800">Chirpy</span>
+                <span className="ml-2 text-xl font-bold text-gray-800">
+                  Chirpy
+                </span>
               </div>
             ) : (
               <FiMessageSquare className="h-6 w-6 text-indigo-600 mx-auto" />
@@ -248,7 +275,7 @@ const ChatApp = () => {
                 type="text"
                 placeholder={sidebarOpen ? "Search contacts..." : ""}
                 className={`w-full pl-10 pr-4 py-2 rounded-lg bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white ${
-                  !sidebarOpen ? 'opacity-0 w-0' : 'opacity-100'
+                  !sidebarOpen ? "opacity-0 w-0" : "opacity-100"
                 }`}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -260,7 +287,7 @@ const ChatApp = () => {
           <div className="p-3">
             <button
               className={`flex items-center justify-center w-full py-2 px-4 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition ${
-                !sidebarOpen ? 'px-2' : ''
+                !sidebarOpen ? "px-2" : ""
               }`}
             >
               <RiChatNewLine className="h-5 w-5" />
@@ -274,19 +301,20 @@ const ChatApp = () => {
               <div
                 key={user?.id || index}
                 className={`flex items-center p-3 border-b border-gray-100 cursor-pointer hover:bg-gray-50 ${
-                  activeChat?.id === user?.id ? 'bg-indigo-50' : ''
+                  activeChat?.id === user?.id ? "bg-indigo-50" : ""
                 }`}
                 onClick={() => {
                   setActiveChat(user);
                   setMobileSidebarOpen(false);
                 }}
               >
-                {user?.profileImg ? (
-                  <img
-                    src={user?.profileImg}
-                    alt={user?.username}
-                    className="h-10 w-10 rounded-full object-cover"
-                  />
+                {user.profileImg ? (
+                <img
+                src={user?.profileImg}
+                referrerPolicy="no-referrer"
+                alt={user?.username || 'Profile'}
+                className="h-10 w-10 rounded-full object-cover"
+              />              
                 ) : (
                   <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
                     <FiUsers className="h-5 w-5 text-indigo-600" />
@@ -300,7 +328,7 @@ const ChatApp = () => {
                       </h3>
                     </div>
                     <p className="text-xs text-gray-500 truncate">
-                      {user.status || 'Hey there! I am using WhatsApp Clone'}
+                      {user.status || "Hey there! I am using WhatsApp Clone"}
                     </p>
                   </div>
                 )}
@@ -310,18 +338,23 @@ const ChatApp = () => {
 
           {/* User profile */}
           <div className="p-3 border-t border-gray-200">
-            <div 
-              className="flex items-center cursor-pointer" 
+            <div
+              className="flex items-center cursor-pointer"
               onClick={() => setShowProfileModal(true)}
             >
               <img
-                src={userProfile?.profileImg || getRandomAvatar(userProfile?.id || 0)}
+                src={
+                  userProfile?.profileImg ||
+                  getRandomAvatar(userProfile?.id || 0)
+                }
                 alt="User"
                 className="h-10 w-10 rounded-full object-cover"
               />
               {sidebarOpen && (
                 <div className="ml-3 flex-1">
-                  <h3 className="text-sm font-medium text-gray-900">{userProfile?.username}</h3>
+                  <h3 className="text-sm font-medium text-gray-900">
+                    {userProfile?.username}
+                  </h3>
                   <p className="text-xs text-gray-500">Online</p>
                 </div>
               )}
@@ -330,7 +363,7 @@ const ChatApp = () => {
                   <button className="text-gray-500 hover:text-gray-700">
                     <FiSettings className="h-5 w-5" />
                   </button>
-                  <button 
+                  <button
                     className="text-gray-500 hover:text-gray-700"
                     onClick={handleLogout}
                   >
@@ -382,19 +415,24 @@ const ChatApp = () => {
                 {messages?.map((msg, index) => (
                   <div
                     key={index || msg?.createdAt}
-                    className={`flex ${msg.isMe ? 'justify-end' : 'justify-start'}`}
+                    className={`flex ${
+                      msg.isMe ? "justify-end" : "justify-start"
+                    }`}
                   >
                     <div
                       className={`max-w-xs md:max-w-md lg:max-w-lg rounded-lg p-3 ${
                         msg?.isMe
-                          ? 'bg-indigo-600 text-white rounded-br-none'
-                          : 'bg-white text-gray-800 rounded-bl-none shadow-sm'
+                          ? "bg-indigo-600 text-white rounded-br-none"
+                          : "bg-white text-gray-800 rounded-bl-none shadow-sm"
                       }`}
                     >
                       {!msg?.isMe && (
                         <div className="flex items-center mb-1">
                           <img
-                            src={activeChat?.profileImg || getRandomAvatar(activeChat.id)}
+                            src={
+                              activeChat?.profileImg ||
+                              getRandomAvatar(activeChat.id)
+                            }
                             alt={activeChat?.username}
                             className="h-6 w-6 rounded-full mr-2"
                           />
@@ -403,35 +441,40 @@ const ChatApp = () => {
                           </span>
                         </div>
                       )}
-                     {
-  msg.uploadFile?.length > 0 ? (
-    <div>
-      {/* Display the message text (if needed) */}
-      <p className="text-sm">{msg?.message}</p>
-      
-      {/* Render each file link */}
-      {msg.uploadFile.map((url, index) => (
-        <a
-          key={index}
-          href={url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={`block text-sm underline ${msg.isMe ? 'text-blue-300 hover:text-blue-200' : 'text-blue-600 hover:text-blue-500'}`}
-        >
-          View File {index + 1}
-        </a>
-      ))}
-    </div>
-  ) : (
-    <p className="text-sm">{msg?.message}</p>
-  )
-}
+                      {msg.uploadFile?.length > 0 ? (
+                        <div>
+                          {/* Display the message text (if needed) */}
+                          <p className="text-sm">{msg?.message}</p>
+
+                          {/* Render each file link */}
+                          {msg.uploadFile.map((url, index) => (
+                            <a
+                              key={index}
+                              href={url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className={`block text-sm underline ${
+                                msg.isMe
+                                  ? "text-blue-300 hover:text-blue-200"
+                                  : "text-blue-600 hover:text-blue-500"
+                              }`}
+                            >
+                              View File {index + 1}
+                            </a>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-sm">{msg?.message}</p>
+                      )}
                       <p
                         className={`text-xs mt-1 ${
-                          msg.isMe ? 'text-indigo-200' : 'text-gray-500'
+                          msg.isMe ? "text-indigo-200" : "text-gray-500"
                         }`}
                       >
-                        {new Date(msg?.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        {new Date(msg?.createdAt).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
                       </p>
                     </div>
                   </div>
@@ -443,7 +486,7 @@ const ChatApp = () => {
             {/* Message input */}
             <div className="bg-white border-t border-gray-200 p-3">
               <div className="flex items-center">
-                <button 
+                <button
                   className="p-2 text-gray-500 hover:text-gray-700 mr-1"
                   onClick={() => fileInputRef.current.click()}
                   disabled={fileUploading}
@@ -463,7 +506,7 @@ const ChatApp = () => {
                   className="flex-1 border border-gray-300 rounded-full py-2 px-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                  onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
                   disabled={fileUploading}
                 />
                 <button
@@ -497,7 +540,7 @@ const ChatApp = () => {
           <div className="bg-white rounded-lg p-6 max-w-md w-full">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold text-gray-800">Your Profile</h2>
-              <button 
+              <button
                 onClick={() => setShowProfileModal(false)}
                 className="text-gray-500 hover:text-gray-700"
               >
@@ -520,13 +563,13 @@ const ChatApp = () => {
               </div>
             </div>
             <div className="mt-6 flex justify-end space-x-3">
-              <button 
+              <button
                 onClick={() => setShowProfileModal(false)}
                 className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
               >
                 Close
               </button>
-              <button 
+              <button
                 onClick={handleLogout}
                 className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
               >
