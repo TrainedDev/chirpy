@@ -69,7 +69,7 @@ const ChatApp = () => {
   // Initialize socket connection
   useEffect(() => {
     // console.log(token);
-    if (!token || !userProfile?.id) return console.log("token not found or not fetched yet");
+    if (!token) return console.log("token not found or not fetched yet");
 
     socketRef.current = io(API_CONFIG.chatUrl, {
       auth: { token },
