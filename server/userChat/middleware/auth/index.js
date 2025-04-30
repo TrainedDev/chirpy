@@ -8,9 +8,9 @@ module.exports.socketAuth = (socket, next) => {
         let token;
 
         if (response.authorization) {
-            token = response.authorization.split(" ")[1];
+            token = response.authorization?.split(" ")[1];
         } else {
-            token = response.cookie.split(";").find(c => c.trim().startsWith("token=")).split("=")[1];
+            token = response.cookie?.split(";").find(c => c.trim().startsWith("token=")).split("=")[1];
         }
 
         if (!token) return next(new Error("token missing! Access Denied"));
@@ -28,7 +28,7 @@ module.exports.socketAuth = (socket, next) => {
 
 module.exports.auth = (req, res, next) => {
     try {
-        const token = req.cookies.token || req.headers.authorization.split(" ")[1];
+        const token = req.cookies?.token || req.headers?.authorization.split(" ")[1];
 
         if(!token) return res.status(401).json(" token missing!, access denied");
 

@@ -19,7 +19,7 @@ app.use((req, res, next) => {
 
 
 app.use(cors({
-    origin: ["https://chirpy-lake.vercel.app"],
+    origin: ["https://chirpy-lake.vercel.app", "http://localhost:5173"],
     credentials: true
 }));
 
@@ -40,7 +40,7 @@ if (!fs.existsSync(fileDir)) {
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: ["https://chirpy-lake.vercel.app"],
+        origin: ["https://chirpy-lake.vercel.app", "http://localhost:5173"],
         credentials: true
     }
 });
