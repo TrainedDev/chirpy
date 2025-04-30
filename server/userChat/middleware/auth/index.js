@@ -5,7 +5,6 @@ module.exports.socketAuth = (socket, next) => {
     try {
         const response = socket.handshake.headers;
         let token;
-        console.log(response.authorization)
 
         if (response.authorization) {
             token = response.authorization?.split(" ")[1];
@@ -30,7 +29,7 @@ module.exports.auth = (req, res, next) => {
     try {
         const token = req.cookies?.token || req.headers?.authorization.split(" ")[1];
 
-        if(!token) return res.status(401).json(" token missing!, access denied");
+        if (!token) return res.status(401).json(" token missing!, access denied");
 
         const decode = jwt.verify(token, process.env.JWT_SECRET);
 

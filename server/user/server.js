@@ -9,11 +9,6 @@ require("pg");
 require("dotenv").config();
 
 const app = express();
-// app.use((req, res, next) => {
-//   console.log("Incoming Origin:", req.headers.origin);
-//   next();
-// });
-
 
 app.use(cors({
   origin: ["https://chirpy-lake.vercel.app"],
