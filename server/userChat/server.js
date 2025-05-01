@@ -48,6 +48,10 @@ io.use(auth.socketAuth);
 
 io.on("connection", (socket) => {
 
+    if (!socket.userId) {
+        console.log("No userId found, disconnecting...");
+        return socket.disconnect(true);
+    }
     console.log("new client connected", socket.userId);
 
     socket.on("messages", async (data) => {
