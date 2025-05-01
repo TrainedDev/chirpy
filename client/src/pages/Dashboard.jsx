@@ -107,7 +107,7 @@ const ChatApp = () => {
         socketRef.current?.disconnect();
       }
     };
-  }, [activeChat, userProfile?.id, token]);
+  }, [token]);
 
   // Fetch initial data (profile and users)
   useEffect(() => {
@@ -148,7 +148,7 @@ const ChatApp = () => {
 
   // Fetch messages when active chat changes
   useEffect(() => {
-  if (!activeChat || !userProfile || !token) return;
+  if (!token) return console.log("token not found or not fetched yet");
 
   const fetchMessages = async () => {
     try {
