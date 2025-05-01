@@ -50,19 +50,7 @@ const ChatApp = () => {
 
   // Initialize socket connection
   useEffect(() => {
-    // console.log(token);
-    if (!token || token === "undefined" || token === "") {
-      console.log("Token invalid or not fetched:", token);
-      return;
-    }
-
-    socketRef.current = io(API_CONFIG.chatUrl, {
-      auth: { token },
-      extraHeaders: {
-        Authorization: `Bearer ${token}`,
-      },
-      withCredentials: true,
-    });
+    socketRef.current = io(API_CONFIG.chatUrl);
 
     socketRef.current.on("connect", () => {
       console.log("Connected to socket server");
@@ -92,7 +80,7 @@ const ChatApp = () => {
         socketRef.current?.disconnect();
       }
     };
-  }, [token, activeChat, userProfile]);
+  }, [token, activeChat?.id, userProfile?.id]);
 
   // Fetch initial data (profile and users)
   useEffect(() => {
@@ -150,10 +138,6 @@ const ChatApp = () => {
 
   // Fetch messages when active chat changes
   useEffect(() => {
-    if (!token || token === "undefined" || token === "") {
-      console.log("Token invalid or not fetched:", token);
-      return;
-    }
     const fetchMessages = async () => {
       try {
         const response = await axios.get(
@@ -190,7 +174,7 @@ const ChatApp = () => {
     if (message.trim() === "" || !activeChat || !userProfile) return;
 
     const newMessage = {
-      // senderId: userProfile._id,
+      senderId: userProfile._id,
       receiverId: activeChat.id,
       message: message.trim(),
       // timestamp: new Date().toISOString(),
@@ -199,7 +183,7 @@ const ChatApp = () => {
 
     // Send message via socket
     socketRef.current.emit("messages", {
-      // senderId: userProfile._id,
+      senderId: userProfile._id,
       receiverId: activeChat.id,
       message: message.trim(),
     });
