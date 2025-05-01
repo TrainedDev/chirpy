@@ -84,11 +84,6 @@ const ChatApp = () => {
 
   // Fetch initial data (profile and users)
   useEffect(() => {
-    if (!token || token === "undefined" || token === "") {
-      console.log("Token invalid or not fetched:", token);
-      return;
-    }
-
     const fetchInitialData = async () => {
       try {
         // Fetch Token
