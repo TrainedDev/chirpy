@@ -49,23 +49,6 @@ const ChatApp = () => {
     },
   };
 
-  // fetch token
-  useEffect(() => {
-    const fetchToken = async () => {
-      const response = await axios.get(
-        `${API_CONFIG.baseUrl}/auth/fetch/token`,
-        {
-          withCredentials: true,
-        }
-      );
-      const token = response.data;
-      // console.log("check-token", token);
-      setToken(token);
-    };
-
-    fetchToken();
-  }, [activeChat, userProfile?.id, navigate]);
-
   // Initialize socket connection
   useEffect(() => {
     // console.log(token);
@@ -113,6 +96,17 @@ const ChatApp = () => {
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
+        // Fetch Token 
+        const tokenResponse = await axios.get(
+          `${API_CONFIG.baseUrl}/auth/fetch/token`,
+          {
+            withCredentials: true,
+          }
+        );
+        const token = tokenResponse.data;
+        // console.log("check-token", token);
+        setToken(token);
+        
         // Fetch user profile
         const profileResponse = await axios.get(
           `${API_CONFIG.baseUrl}${API_CONFIG.endpoints.profile}`,
@@ -121,6 +115,7 @@ const ChatApp = () => {
           }
         );
         setUserProfile(profileResponse.data.user);
+
         // Fetch all users
         const usersResponse = await axios.get(
           `${API_CONFIG.baseUrl}${API_CONFIG.endpoints.allUsers}`,
@@ -174,14 +169,14 @@ const ChatApp = () => {
   };
 
   fetchMessages();
-}, [activeChat, userProfile, token]);
-
+}, [activeChat, userProfile]);
 
   // Auto-scroll to bottom of messages
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, token]);
+  }, [messages]);
 
+  // handle current message 
   const handleSendMessage = () => {
     if (message.trim() === "" || !activeChat || !userProfile) return;
 
@@ -205,6 +200,7 @@ const ChatApp = () => {
     setMessage("");
   };
 
+  // handle file upload
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
     if (!file || !activeChat || !userProfile) return;
@@ -238,6 +234,7 @@ const ChatApp = () => {
     }
   };
 
+  // logout users
   const handleLogout = async () => {
     try {
       await axios.get(`${API_CONFIG.baseUrl}/auth/logout`, {
@@ -251,6 +248,7 @@ const ChatApp = () => {
     }
   };
 
+  // handle search user
   const filteredUsers = users.filter((user) =>
     user.username.toLowerCase().includes(searchTerm.toLowerCase())
   );
