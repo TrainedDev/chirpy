@@ -50,7 +50,22 @@ const ChatApp = () => {
 
   // Initialize socket connection
   useEffect(() => {
-    socketRef.current = io(API_CONFIG.chatUrl);
+
+    const isValidToken = typeof token === "string" && token.trim().length > 0;
+    const isValidActiveChatId = !!activeChat?.id;
+    const isValidUserId = !!userProfile?.id;
+  
+    if (!isValidToken || !isValidActiveChatId || !isValidUserId) {
+      console.log("Socket connection blocked: missing or invalid data");
+      return;
+    }
+
+    socketRef.current = io(API_CONFIG.chatUrl, {
+      extraHeaders: {
+        Authorization: `Bearer ${token}`,
+      },
+      withCredentials: true,
+    });
 
     socketRef.current.on("connect", () => {
       console.log("Connected to socket server");
@@ -133,6 +148,8 @@ const ChatApp = () => {
 
   // Fetch messages when active chat changes
   useEffect(() => {
+    if (!token || !activeChat?.id || !userProfile?.id) return console.log("details not found or fetched yet");
+  
     const fetchMessages = async () => {
       try {
         const response = await axios.get(
@@ -155,9 +172,10 @@ const ChatApp = () => {
         toast.error("Failed to load messages");
       }
     };
-
+  
     fetchMessages();
-  }, [activeChat, userProfile, token]);
+  }, [token, activeChat?.id, userProfile?.id]);
+  
 
   // Auto-scroll to bottom of messages
   useEffect(() => {
