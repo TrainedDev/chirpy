@@ -170,7 +170,9 @@ const logout = (req, res) => {
         res.clearCookie("token", {
             httpOnly: true,
             secure: true,
-            sameSite: "None"
+            sameSite: "None",
+            maxAge: 0
+
         });
 
         res.status(200).json({ msg: "logged Out" })

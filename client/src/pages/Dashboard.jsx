@@ -147,36 +147,6 @@ const ChatApp = () => {
   }, [navigate]);
 
   // Fetch messages when active chat changes
-  // useEffect(() => {
-  //   if (activeChat && userProfile && token) {
-  //     const fetchMessages = async () => {
-  //       try {
-  //         const response = await axios.get(
-  //           `${API_CONFIG.chatUrl}${API_CONFIG.endpoints.messages}/${activeChat.id}`,
-  //           {
-  //             auth: { token },
-  //             extraHeaders: {
-  //               Authorization: `Bearer ${token}`,
-  //             },
-  //             withCredentials: true,
-  //           }
-  //         );
-  //         setMessages(
-  //           response.data.chats.map((chat) => ({
-  //             ...chat,
-  //             isMe: parseInt(chat.senderId) === userProfile.id,
-  //           }))
-  //         );
-  //       } catch (error) {
-  //         console.error("Error fetching messages:", error);
-  //         toast.error("Failed to load messages");
-  //       }
-  //     };
-
-  //     fetchMessages();
-  //   }
-  // }, [activeChat, userProfile, token]);
-
   useEffect(() => {
   if (!activeChat || !userProfile || !token) return;
 
@@ -273,7 +243,7 @@ const ChatApp = () => {
       await axios.get(`${API_CONFIG.baseUrl}/auth/logout`, {
         withCredentials: true,
       });
-      navigate("/login");
+      // navigate("/login");
       toast.success("Logged out successfully");
     } catch (error) {
       console.error("Logout error:", error);
