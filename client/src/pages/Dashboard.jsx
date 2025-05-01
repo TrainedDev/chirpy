@@ -14,7 +14,6 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import axios from "axios";
 import { io } from "socket.io-client";
-import Cookies from "js-cookie";
 
 const ChatApp = () => {
   // State management
@@ -52,7 +51,10 @@ const ChatApp = () => {
   // Initialize socket connection
   useEffect(() => {
     // console.log(token);
-    if (!token) return console.log("token not found or not fetched yet");
+    if (!token || token === "undefined" || token === "") {
+      console.log("Token invalid or not fetched:", token);
+      return;
+    }
 
     socketRef.current = io(API_CONFIG.chatUrl, {
       auth: { token },
@@ -90,13 +92,18 @@ const ChatApp = () => {
         socketRef.current?.disconnect();
       }
     };
-  }, [token]);
+  }, [token, activeChat, userProfile]);
 
   // Fetch initial data (profile and users)
   useEffect(() => {
+    if (!token || token === "undefined" || token === "") {
+      console.log("Token invalid or not fetched:", token);
+      return;
+    }
+
     const fetchInitialData = async () => {
       try {
-        // Fetch Token 
+        // Fetch Token
         const tokenResponse = await axios.get(
           `${API_CONFIG.baseUrl}/auth/fetch/token`,
           {
@@ -106,7 +113,7 @@ const ChatApp = () => {
         const token = tokenResponse.data;
         // console.log("check-token", token);
         setToken(token);
-        
+
         // Fetch user profile
         const profileResponse = await axios.get(
           `${API_CONFIG.baseUrl}${API_CONFIG.endpoints.profile}`,
@@ -143,40 +150,42 @@ const ChatApp = () => {
 
   // Fetch messages when active chat changes
   useEffect(() => {
-  if (!token) return console.log("token not found or not fetched yet");
-
-  const fetchMessages = async () => {
-    try {
-      const response = await axios.get(
-        `${API_CONFIG.chatUrl}${API_CONFIG.endpoints.messages}/${activeChat.id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          withCredentials: true,
-        }
-      );
-      setMessages(
-        response.data.chats.map((chat) => ({
-          ...chat,
-          isMe: parseInt(chat.senderId) === userProfile.id,
-        }))
-      );
-    } catch (error) {
-      console.error("Error fetching messages:", error);
-      toast.error("Failed to load messages");
+    if (!token || token === "undefined" || token === "") {
+      console.log("Token invalid or not fetched:", token);
+      return;
     }
-  };
+    const fetchMessages = async () => {
+      try {
+        const response = await axios.get(
+          `${API_CONFIG.chatUrl}${API_CONFIG.endpoints.messages}/${activeChat.id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            withCredentials: true,
+          }
+        );
+        setMessages(
+          response.data.chats.map((chat) => ({
+            ...chat,
+            isMe: parseInt(chat.senderId) === userProfile.id,
+          }))
+        );
+      } catch (error) {
+        console.error("Error fetching messages:", error);
+        toast.error("Failed to load messages");
+      }
+    };
 
-  fetchMessages();
-}, [activeChat, userProfile]);
+    fetchMessages();
+  }, [activeChat, userProfile, token]);
 
   // Auto-scroll to bottom of messages
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // handle current message 
+  // handle current message
   const handleSendMessage = () => {
     if (message.trim() === "" || !activeChat || !userProfile) return;
 
@@ -393,7 +402,7 @@ const ChatApp = () => {
                   </button>
                   <button
                     className="text-gray-500 hover:text-gray-700"
-                    // onClick={handleLogout}                                 
+                    // onClick={handleLogout}
                   >
                     <FiLogOut className="h-5 w-5" />
                   </button>

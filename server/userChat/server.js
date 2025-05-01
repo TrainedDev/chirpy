@@ -21,6 +21,7 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ limit: "70mb", extended: true }));
 app.use(cookiesParser());
+
 connectDb();
 
 const PORT = process.env.PORT || 3002;
