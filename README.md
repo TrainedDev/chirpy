@@ -17,7 +17,7 @@ Chirpy is a modern, responsive, and minimalistic web application designed to fac
 
 - **Frontend**: React.js, Tailwind CSS
 - **Backend**: Node.js, Express.js
-- **Database**: MongoDB
+- **Database**: MongoDB, Supabase
 - **Authentication**: JSON Web Tokens (JWT)
 - **Deployment**: Vercel
 
