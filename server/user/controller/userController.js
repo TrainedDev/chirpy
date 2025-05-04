@@ -168,6 +168,7 @@ const logout = (req, res) => {
     try {
 
         res.clearCookie("token", {
+            domain:".vercel.app",
             httpOnly: true,
             secure: true,
             sameSite: "lax",
