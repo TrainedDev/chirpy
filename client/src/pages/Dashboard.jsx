@@ -61,9 +61,9 @@ const ChatApp = () => {
     }
 
     socketRef.current = io(API_CONFIG.chatUrl, {
-      extraHeaders: {
-        Authorization: `Bearer ${token}`,
-      },
+      // extraHeaders: {
+      //   Authorization: `Bearer ${token}`,
+      // },
       withCredentials: true,
     });
 
@@ -162,9 +162,9 @@ const ChatApp = () => {
         const response = await axios.get(
           `${API_CONFIG.chatUrl}${API_CONFIG.endpoints.messages}/${activeChat.id}`,
           {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+            // headers: {
+            //   Authorization: `Bearer ${token}`,
+            // },
             withCredentials: true,
           }
         );
@@ -253,7 +253,7 @@ const ChatApp = () => {
       await axios.get(`${API_CONFIG.baseUrl}/auth/logout`, {
         withCredentials: true,
       });
-      // navigate("/login");
+      navigate("/login");
       toast.success("Logged out successfully");
     } catch (error) {
       console.error("Logout error:", error);

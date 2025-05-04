@@ -170,8 +170,8 @@ const logout = (req, res) => {
         res.clearCookie("token", {
             httpOnly: true,
             secure: true,
-            sameSite: "None",
-            maxAge: 0
+            sameSite: "lax",
+            // maxAge: 0
 
         });
 
