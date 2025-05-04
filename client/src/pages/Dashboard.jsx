@@ -102,15 +102,15 @@ const ChatApp = () => {
     const fetchInitialData = async () => {
       try {
         // Fetch Token
-        const tokenResponse = await axios.get(
-          `${API_CONFIG.baseUrl}/auth/fetch/token`,
-          {
-            withCredentials: true,
-          }
-        );
-        const token = tokenResponse.data;
-        // console.log("check-token", token);
-        setToken(token);
+        // const tokenResponse = await axios.get(
+        //   `${API_CONFIG.baseUrl}/auth/fetch/token`,
+        //   {
+        //     withCredentials: true,
+        //   }
+        // );
+        // const token = tokenResponse.data;
+        // // console.log("check-token", token);
+        // setToken(token);
 
         // Fetch user profile
         const profileResponse = await axios.get(
