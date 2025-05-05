@@ -128,7 +128,7 @@ const ChatApp = () => {
     const fetchMessages = async () => {
       try {
         const response = await axios.get(
-          `${API_CONFIG.chatUrl}${API_CONFIG.endpoints.messages}/${activeChat.id}`,
+          `${API_CONFIG.chatUrl}${API_CONFIG.endpoints.messages}/${activeChat?.id}`,
           {
             withCredentials: true,
           }
@@ -136,7 +136,7 @@ const ChatApp = () => {
         setMessages(
           response.data.chats.map((chat) => ({
             ...chat,
-            isMe: parseInt(chat.senderId) === userProfile.id,
+            isMe: parseInt(chat.senderId) === userProfile?.id,
           }))
         );
       } catch (error) {
