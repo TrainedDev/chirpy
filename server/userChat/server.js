@@ -15,6 +15,7 @@ const app = express();
 app.use(cors({
     origin: ["https://chirpy-lake.vercel.app", "http://localhost:5173"],
     credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization"],
 }));
 
 app.use(express.json());
@@ -37,6 +38,7 @@ const io = new Server(server, {
     cors: {
         origin: ["https://chirpy-lake.vercel.app", "http://localhost:5173"],
         credentials: true,
+        allowedHeaders: ["Authorization"],
     }
 });
 
