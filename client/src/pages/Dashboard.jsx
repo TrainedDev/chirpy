@@ -16,7 +16,7 @@ import axios from "axios";
 import { io } from "socket.io-client";
 
 const ChatApp = () => {
-  // State management
+  // State management (keep your existing state)
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [activeChat, setActiveChat] = useState(null);
@@ -29,15 +29,16 @@ const ChatApp = () => {
   const [fileUploading, setFileUploading] = useState(false);
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [connectionStatus, setConnectionStatus] = useState('disconnected');
 
-  // Refs
+  // Refs (keep your existing refs)
   const socketRef = useRef(null);
   const fileInputRef = useRef(null);
   const messagesEndRef = useRef(null);
 
   const navigate = useNavigate();
 
-  // API configuration
+  // API configuration (keep your existing config)
   const API_CONFIG = {
     baseUrl: import.meta.env.VITE_API_BASE_URL,
     chatUrl: import.meta.env.VITE_API_SOCKET_BASE_URL,
@@ -49,28 +50,112 @@ const ChatApp = () => {
     },
   };
 
-  // Fetch token and initialize data
-  const fetchTokenAndInitialize = useCallback(async () => {
+  // Enhanced token management
+  const fetchTokenWithRetry = async (retries = 3, delay = 1000) => {
     try {
-      setLoading(true);
-
-      // 1. First fetch the token
-      const tokenResponse = await axios.get(
+      const response = await axios.get(
         `${API_CONFIG.baseUrl}/auth/fetch/token`,
         { withCredentials: true }
       );
-      const newToken = tokenResponse.data;
-      setToken(newToken);
+      const newToken = response.data;
       localStorage.setItem("token", newToken);
+      setToken(newToken);
+      return newToken;
+    } catch (error) {
+      if (retries > 0) {
+        await new Promise(resolve => setTimeout(resolve, delay));
+        return fetchTokenWithRetry(retries - 1, delay * 2);
+      }
+      throw error;
+    }
+  };
 
-      // 2. Then fetch user profile and users
+  // Enhanced socket initialization
+  const initializeSocket = useCallback(async () => {
+    try {
+      let currentToken = localStorage.getItem("token");
+      
+      // Verify and refresh token if needed
+      if (!currentToken) {
+        currentToken = await fetchTokenWithRetry();
+      }
+
+      // Disconnect existing socket if any
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+      }
+
+      // Initialize new socket connection
+      socketRef.current = io(API_CONFIG.chatUrl, {
+        transports: ["websocket"],
+        auth: { token: `Bearer ${currentToken}` },
+        withCredentials: true,
+        reconnectionAttempts: 5,
+        reconnectionDelay: 1000,
+      });
+
+      // Socket event handlers
+      socketRef.current.on("connect", () => {
+        console.log("Socket connected");
+        setConnectionStatus('connected');
+      });
+
+      socketRef.current.on("disconnect", () => {
+        setConnectionStatus('disconnected');
+      });
+
+      socketRef.current.on("connect_error", async (err) => {
+        console.error("Connection error:", err);
+        setConnectionStatus('error');
+        
+        if (err.message.includes("401")) {
+          try {
+            const newToken = await fetchTokenWithRetry();
+            socketRef.current.auth.token = `Bearer ${newToken}`;
+            socketRef.current.connect();
+          } catch (error) {
+            console.error("Reauthentication failed:", error);
+          }
+        }
+      });
+
+      socketRef.current.on("send-message", (newMessage) => {
+        if (!activeChat) return;
+        
+        const isRelevantMessage = 
+          (newMessage.senderId === activeChat.id && newMessage.receiverId === userProfile?.id) ||
+          (newMessage.receiverId === activeChat.id && newMessage.senderId === userProfile?.id);
+        
+        if (isRelevantMessage) {
+          setMessages(prev => [...prev, {
+            ...newMessage,
+            isMe: newMessage.senderId === userProfile?.id,
+          }]);
+        }
+      });
+
+    } catch (error) {
+      console.error("Socket initialization failed:", error);
+      setConnectionStatus('error');
+    }
+  }, [activeChat, userProfile?.id]);
+
+  // Enhanced initialization flow
+  const initializeApp = useCallback(async () => {
+    try {
+      setLoading(true);
+      
+      // 1. Fetch token first
+      const token = await fetchTokenWithRetry();
+      
+      // 2. Fetch profile and users in parallel
       const [profileResponse, usersResponse] = await Promise.all([
         axios.get(`${API_CONFIG.baseUrl}${API_CONFIG.endpoints.profile}`, {
-          headers: { Authorization: `Bearer ${newToken}` },
+          headers: { Authorization: `Bearer ${token}` },
           withCredentials: true,
         }),
         axios.get(`${API_CONFIG.baseUrl}${API_CONFIG.endpoints.allUsers}`, {
-          headers: { Authorization: `Bearer ${newToken}` },
+          headers: { Authorization: `Bearer ${token}` },
           withCredentials: true,
         }),
       ]);
@@ -82,8 +167,8 @@ const ChatApp = () => {
         )
       );
 
-      // 3. Initialize socket connection after we have the token and user profile
-      initializeSocket(newToken, profileResponse.data.user.id);
+      // 3. Initialize socket connection
+      await initializeSocket();
 
       setLoading(false);
     } catch (error) {
@@ -94,143 +179,93 @@ const ChatApp = () => {
       }
       setLoading(false);
     }
-  }, []);
+  }, [initializeSocket]);
 
-  // Initialize socket connection
-  const initializeSocket = useCallback(
-    (token, userId) => {
-      if (!token) return;
+  // Enhanced message fetching
+  const fetchMessages = async () => {
+    if (!activeChat?.id || !token) return;
+console.log(token, activeChat.id)
+    try {
+      const response = await axios.get(
+        `${API_CONFIG.chatUrl}${API_CONFIG.endpoints.messages}/${activeChat?.id}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          withCredentials: true,
+        }
+      );
+      
+      setMessages(
+        response.data.chats.map((chat) => ({
+          ...chat,
+          isMe: parseInt(chat.senderId) === userProfile?.id,
+        }))
+      );
+    } catch (error) {
+      console.error("Error fetching messages:", error);
+      if (error.response?.status === 401) {
+        try {
+          const newToken = await fetchTokenWithRetry();
+          setToken(newToken);
+          fetchMessages(); // Retry with new token
+        } catch (err) {
+          toast.error("Session expired. Please refresh the page.");
+        }
+      } else {
+        toast.error("Failed to load messages");
+      }
+    }
+  };
 
-      // Disconnect existing socket if any
+  // Enhanced send message handler
+  const handleSendMessage = () => {
+    if (!message.trim() || !activeChat || !userProfile || !socketRef.current) {
+      return;
+    }
+
+    const newMessage = {
+      senderId: userProfile.id,
+      receiverId: activeChat.id,
+      message: message.trim(),
+      isMe: true,
+      createdAt: new Date().toISOString()
+    };
+
+    // Optimistic update
+    setMessages(prev => [...prev, newMessage]);
+    setMessage("");
+
+    // Send via socket
+    socketRef.current.emit("messages", {
+      senderId: userProfile.id,
+      receiverId: activeChat.id,
+      message: message.trim()
+    });
+  };
+
+  // Initialize app on mount
+  useEffect(() => {
+    initializeApp();
+
+    return () => {
       if (socketRef.current) {
         socketRef.current.disconnect();
       }
-
-      socketRef.current = io(API_CONFIG.chatUrl, {
-        extraHeaders: {
-          Authorization: `Bearer ${token}`,
-        },
-        withCredentials: true,
-      });
-
-      socketRef.current.on("connect", () => {
-        console.log("Connected to socket server");
-      });
-
-      socketRef.current.on("send-message", (newMessage) => {
-        if (
-          (newMessage.senderId === activeChat?.id &&
-            newMessage.receiverId === userId) ||
-          (newMessage.receiverId === activeChat?.id &&
-            newMessage.senderId === userId)
-        ) {
-          setMessages((prev) => [
-            ...prev,
-            {
-              ...newMessage,
-              isMe: newMessage.senderId === userId,
-            },
-          ]);
-        }
-      });
-
-      socketRef.current.on("connect_error", (err) => {
-        console.error("Socket connection error:", err);
-        toast.error("Connection error. Please refresh the page.");
-      });
-
-      return () => {
-        if (socketRef.current) {
-          socketRef.current.disconnect();
-        }
-      };
-    },
-    [activeChat?.id]
-  );
-
-  // Initial data fetch
-  useEffect(() => {
-    fetchTokenAndInitialize();
-  }, [fetchTokenAndInitialize]);
-
-  // Fetch messages when active chat changes (only after we have token and user profile)
-  useEffect(() => {
-    const fetchMessages = async () => {
-      if (!activeChat?.id || !token || !userProfile?.id) return;
-
-      try {
-        const response = await axios.get(
-          `${API_CONFIG.chatUrl}${API_CONFIG.endpoints.messages}/${activeChat.id}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-            withCredentials: true,
-          }
-        );
-        setMessages(
-          response.data.chats.map((chat) => ({
-            ...chat,
-            isMe: parseInt(chat.senderId) === userProfile.id,
-          }))
-        );
-      } catch (error) {
-        console.error("Error fetching messages:", error);
-        toast.error("Failed to load messages");
-      }
     };
+  }, [initializeApp]);
 
-    fetchMessages();
-  }, [activeChat?.id, token, userProfile?.id]);
+  // Fetch messages when active chat changes
+  useEffect(() => {
+    if (token) {
+      fetchMessages();
+    }
+  }, [activeChat?.id, token]);
 
   // Auto-scroll to bottom of messages
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // handle current message
-  const handleSendMessage = () => {
-    if (
-      message.trim() === "" ||
-      !activeChat ||
-      !userProfile ||
-      !socketRef.current
-    )
-      return;
-
-    const newMessage = {
-      senderId: userProfile._id,
-      receiverId: activeChat.id,
-      message: message.trim(),
-      isMe: true,
-    };
-
-    // Send message via socket
-    socketRef.current.emit("messages", {
-      senderId: userProfile._id,
-      receiverId: activeChat.id,
-      message: message.trim(),
-    });
-
-    // Optimistically update UI
-    setMessages((prev) => [...prev, newMessage]);
-    setMessage("");
-  };
-
-  // Rest of your component code remains the same...
-  // (handleFileUpload, handleLogout, filteredUsers, getRandomAvatar, etc.)
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Initializing chat...</p>
-        </div>
-      </div>
-    );
-  }
-
+  
    // handle file upload
    const handleFileUpload = async (e) => {
     const file = e.target.files[0];
