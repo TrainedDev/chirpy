@@ -171,7 +171,7 @@ const logout = (req, res) => {
             domain:".vercel.app",
             httpOnly: true,
             secure: true,
-            sameSite: "lax",
+            sameSite: "none",
             // maxAge: 0
 
         });
