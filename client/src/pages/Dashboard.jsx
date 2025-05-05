@@ -87,11 +87,10 @@ const ChatApp = () => {
 
       // Initialize new socket connection
       socketRef.current = io(API_CONFIG.chatUrl, {
-        transports: ["websocket"],
-        auth: { token: `Bearer ${currentToken}` },
+        extraHeaders: {
+          Authorization: `Bearer ${token}`,
+        },
         withCredentials: true,
-        reconnectionAttempts: 5,
-        reconnectionDelay: 1000,
       });
 
       // Socket event handlers
@@ -309,6 +308,7 @@ console.log(token, activeChat.id)
       await axios.get(`${API_CONFIG.baseUrl}/auth/logout`, {
         withCredentials: true,
       });
+      localStorage.removeItem("token");
       navigate("/login");
       toast.success("Logged out successfully");
     } catch (error) {
