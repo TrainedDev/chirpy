@@ -27,7 +27,6 @@ const ChatApp = () => {
   const [userProfile, setUserProfile] = useState(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [fileUploading, setFileUploading] = useState(false);
-  const [token, setToken] = useState(null);
   // console.log("users",users)
   // Refs
   const socketRef = useRef(null);
@@ -51,19 +50,7 @@ const ChatApp = () => {
   // Initialize socket connection
   useEffect(() => {
 
-    const isValidToken = typeof token === "string" && token.trim().length > 0;
-    const isValidActiveChatId = !!activeChat?.id;
-    const isValidUserId = !!userProfile?.id;
-  
-    if (!isValidToken || !isValidActiveChatId || !isValidUserId) {
-      console.log("Socket connection blocked: missing or invalid data");
-      return;
-    }
-
     socketRef.current = io(API_CONFIG.chatUrl, {
-      // extraHeaders: {
-      //   Authorization: `Bearer ${token}`,
-      // },
       withCredentials: true,
     });
 
@@ -95,23 +82,12 @@ const ChatApp = () => {
         socketRef.current?.disconnect();
       }
     };
-  }, [token, activeChat?.id, userProfile?.id]);
+  }, [activeChat?.id, userProfile?.id]);
 
   // Fetch initial data (profile and users)
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
-        // Fetch Token
-        // const tokenResponse = await axios.get(
-        //   `${API_CONFIG.baseUrl}/auth/fetch/token`,
-        //   {
-        //     withCredentials: true,
-        //   }
-        // );
-        // const token = tokenResponse.data;
-        // // console.log("check-token", token);
-        // setToken(token);
-
         // Fetch user profile
         const profileResponse = await axios.get(
           `${API_CONFIG.baseUrl}${API_CONFIG.endpoints.profile}`,
@@ -133,6 +109,7 @@ const ChatApp = () => {
             (user) => user.id !== profileResponse?.data.user.id
           )
         );
+        console.log(profileResponse)
       } catch (error) {
         console.error("Error fetching initial data:", error);
         toast.error("Failed to load data");
@@ -148,23 +125,11 @@ const ChatApp = () => {
 
   // Fetch messages when active chat changes
   useEffect(() => {
-    const isValidToken = typeof token === "string" && token.trim().length > 0;
-    const isValidActiveChatId = !!activeChat?.id;
-    const isValidUserId = !!userProfile?.id;
-  
-    if (!isValidToken || !isValidActiveChatId || !isValidUserId) {
-      console.log("Socket connection blocked: missing or invalid data");
-      return;
-    }
-    
     const fetchMessages = async () => {
       try {
         const response = await axios.get(
           `${API_CONFIG.chatUrl}${API_CONFIG.endpoints.messages}/${activeChat.id}`,
           {
-            // headers: {
-            //   Authorization: `Bearer ${token}`,
-            // },
             withCredentials: true,
           }
         );
@@ -181,7 +146,7 @@ const ChatApp = () => {
     };
   
     fetchMessages();
-  }, [token, activeChat?.id, userProfile?.id]);
+  }, [activeChat?.id, userProfile?.id]);
   
 
   // Auto-scroll to bottom of messages
