@@ -76,7 +76,6 @@ const googleLogin = async (req, res) => {
     }
 };
 
-
 const fetchGoogleAccessToken = async (req, res) => {
     try {
         const { code } = req.query;
@@ -152,18 +151,6 @@ const fetchAllUsers = async (req, res) => {
     }
 };
 
-const fetchToken = async (req, res) => {
-    try {
-        const token = req.cookies.token;
-
-        if (!token) res.status(400).json("required token not found");
-
-        res.status(200).json(token);
-    } catch (error) {
-        res.status(500).json({ msg: "failed to fetch token", error: error.message })
-    }
-};
-
 const logout = (req, res) => {
     try {
 
@@ -181,4 +168,4 @@ const logout = (req, res) => {
         res.status(500).json({ msg: "failed to logout", error: error.message })
     }
 }
-module.exports = { register, login, googleLogin, fetchGoogleAccessToken, fetchUserProfile, fetchAllUsers, fetchToken, logout };
+module.exports = { register, login, googleLogin, fetchGoogleAccessToken, fetchUserProfile, fetchAllUsers, logout };
