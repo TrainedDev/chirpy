@@ -75,12 +75,3 @@ const userCookies = (res, token) => {
     });
 };
 module.exports = { cloudinaryUpload, fileValidation, userCookies, checkOauthUser };
-
-
-// res.cookie("token", token, {
-//     domain:".vercel.app",
-    // httpOnly: true, // javascript won't be able to access cookie
-//     Secure: true, // works only in https
-//     sameSite: "None", // cross origin can cookies with all request methods if set to none and secure, strict-> only works if subdomain, register domain when cookies can be access ( basically mean both urls should be exact same), lax-> same like strict but can work different register domain and subdomain but with only get method
-//     maxAge: 1000 * 60 * 60 * 24, //1 day
-// });

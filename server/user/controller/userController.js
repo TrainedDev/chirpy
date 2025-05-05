@@ -168,4 +168,5 @@ const logout = (req, res) => {
         res.status(500).json({ msg: "failed to logout", error: error.message })
     }
 }
+
 module.exports = { register, login, googleLogin, fetchGoogleAccessToken, fetchUserProfile, fetchAllUsers, logout };
