@@ -53,7 +53,7 @@ const ChatApp = () => {
   const fetchTokenAndInitialize = useCallback(async () => {
     try {
       setLoading(true);
-      
+
       // 1. First fetch the token
       const tokenResponse = await axios.get(
         `${API_CONFIG.baseUrl}/auth/fetch/token`,
@@ -97,53 +97,56 @@ const ChatApp = () => {
   }, []);
 
   // Initialize socket connection
-  const initializeSocket = useCallback((token, userId) => {
-    if (!token) return;
+  const initializeSocket = useCallback(
+    (token, userId) => {
+      if (!token) return;
 
-    // Disconnect existing socket if any
-    if (socketRef.current) {
-      socketRef.current.disconnect();
-    }
-
-    socketRef.current = io(API_CONFIG.chatUrl, {
-      extraHeaders: {
-        Authorization: `Bearer ${token}`,
-      },
-      withCredentials: true,
-    });
-
-    socketRef.current.on("connect", () => {
-      console.log("Connected to socket server");
-    });
-
-    socketRef.current.on("send-message", (newMessage) => {
-      if (
-        (newMessage.senderId === activeChat?.id &&
-          newMessage.receiverId === userId) ||
-        (newMessage.receiverId === activeChat?.id &&
-          newMessage.senderId === userId)
-      ) {
-        setMessages((prev) => [
-          ...prev,
-          {
-            ...newMessage,
-            isMe: newMessage.senderId === userId,
-          },
-        ]);
-      }
-    });
-
-    socketRef.current.on("connect_error", (err) => {
-      console.error("Socket connection error:", err);
-      toast.error("Connection error. Please refresh the page.");
-    });
-
-    return () => {
+      // Disconnect existing socket if any
       if (socketRef.current) {
         socketRef.current.disconnect();
       }
-    };
-  }, [activeChat?.id]);
+
+      socketRef.current = io(API_CONFIG.chatUrl, {
+        extraHeaders: {
+          Authorization: `Bearer ${token}`,
+        },
+        withCredentials: true,
+      });
+
+      socketRef.current.on("connect", () => {
+        console.log("Connected to socket server");
+      });
+
+      socketRef.current.on("send-message", (newMessage) => {
+        if (
+          (newMessage.senderId === activeChat?.id &&
+            newMessage.receiverId === userId) ||
+          (newMessage.receiverId === activeChat?.id &&
+            newMessage.senderId === userId)
+        ) {
+          setMessages((prev) => [
+            ...prev,
+            {
+              ...newMessage,
+              isMe: newMessage.senderId === userId,
+            },
+          ]);
+        }
+      });
+
+      socketRef.current.on("connect_error", (err) => {
+        console.error("Socket connection error:", err);
+        toast.error("Connection error. Please refresh the page.");
+      });
+
+      return () => {
+        if (socketRef.current) {
+          socketRef.current.disconnect();
+        }
+      };
+    },
+    [activeChat?.id]
+  );
 
   // Initial data fetch
   useEffect(() => {
@@ -187,7 +190,13 @@ const ChatApp = () => {
 
   // handle current message
   const handleSendMessage = () => {
-    if (message.trim() === "" || !activeChat || !userProfile || !socketRef.current) return;
+    if (
+      message.trim() === "" ||
+      !activeChat ||
+      !userProfile ||
+      !socketRef.current
+    )
+      return;
 
     const newMessage = {
       senderId: userProfile._id,
@@ -221,10 +230,78 @@ const ChatApp = () => {
       </div>
     );
   }
+
+   // handle file upload
+   const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file || !activeChat || !userProfile) return;
+
+    // Validate file size (100MB limit)
+    if (file.size > 100 * 1024 * 1024) {
+      toast.error("File size exceeds 100MB limit");
+      return;
+    }
+
+    setFileUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("files", file);
+      formData.append("receiverId", activeChat.id);
+
+      const response = await axios.post(
+        `${API_CONFIG.chatUrl}${API_CONFIG.endpoints.upload}`,
+        formData,
+        {
+          withCredentials: true,
+        }
+      );
+      toast.success("File sent successfully");
+    } catch (error) {
+      console.error("File upload error:", error);
+      toast.error("Failed to upload file");
+    } finally {
+      setFileUploading(false);
+      e.target.value = ""; // Reset file input
+    }
+  };
+
+  const filteredUsers = users.filter((user) =>
+    user.username.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const handleLogout = async () => {
+    try {
+      await axios.get(`${API_CONFIG.baseUrl}/auth/logout`, {
+        withCredentials: true,
+      });
+      navigate("/login");
+      toast.success("Logged out successfully");
+    } catch (error) {
+      console.error("Logout error:", error);
+      toast.error("Logout failed");
+    }
+  };
+
+  
+  
+  const getRandomAvatar = (id) => {
+    // Using DiceBear's adorable avatars (cartoon style)
+    const avatarStyles = [
+      "adventurer",
+      "avataaars",
+      "bottts",
+      "micah",
+      "miniavs",
+      "open-peeps",
+    ];
+    
+    const style = avatarStyles[id % avatarStyles.length];
+
+    return `https://api.dicebear.com/7.x/${style}/svg?seed=${id}`;
+  };
   
   console.log(messages);
 
-  
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">
       {/* Mobile sidebar toggle */}
@@ -409,7 +486,7 @@ const ChatApp = () => {
               <div className="space-y-4">
                 {messages?.map((msg, index) => (
                   <div
-                    key={index || msg?.createdAt}
+                    key={index}
                     className={`flex ${
                       msg.isMe ? "justify-end" : "justify-start"
                     }`}
