@@ -68,7 +68,7 @@ const checkOauthUser = async (access_token) => {
 
 const userCookies = (res, token) => {
     res.cookie("token", token, {
-        domain:".vercel.app",
+        // domain:".vercel.app",
         httpOnly: true,
         Secure: true, 
         sameSite: "None",
