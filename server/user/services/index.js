@@ -70,8 +70,8 @@ const userCookies = (res, token) => {
     res.cookie("token", token, {
         // domain:".vercel.app",
         httpOnly: true,
-        Secure: true, 
-        sameSite: "None",
+        // Secure: true, 
+        // sameSite: "None",
         maxAge: 1000 * 60 * 60 * 24, //1 day
     });
 };
