@@ -14,15 +14,19 @@ const register = async (req, res) => {
 
         console.log(req.body, req.file)
 
-        if (!filePath || !username || !email || !password) return res.status(400).json("required details not found");
+        if (!username || !email || !password) return res.status(400).json("required details not found");
 
-        const response = await cloudinaryUpload(filePath);
+        let response;
+
+        if (filePath) {
+            response = await cloudinaryUpload(filePath);
+        }
 
         const existUser = await userModel.findOne({ where: { email } });
 
         if (existUser) return res.status(400).json("user already exist");
 
-        const profileImg = response.secure_url;
+        const profileImg = response.secure_url || null;
 
         const saltPassword = await bcrypt.genSalt(10);
 
