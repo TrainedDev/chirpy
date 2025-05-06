@@ -9,7 +9,7 @@ const route = Router();
 
 function uploadUserProfilePic(req, res, next) {
     upload(req, res, (err) => {
-        if(!req.file) return res.status(400).json("required file not found")
+        // if(!req.file) return res.status(400).json("required file not found")
         if (err instanceof multer.MulterError) {
             if (err === UNEXPECT_FILE_TYPE.code) return res.status(400).json({ error: { description: err.field } });
         } else if(err) {
