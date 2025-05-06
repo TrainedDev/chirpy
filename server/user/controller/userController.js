@@ -10,23 +10,23 @@ const jwt_Secret = process.env.JWT_SECRET;
 const register = async (req, res) => {
     try {
         const { username, email, password } = req.body;
-        const filePath = req.file.path;
-
-        console.log(req.body, req.file)
 
         if (!username || !email || !password) return res.status(400).json("required details not found");
 
         let response;
+        console.log("i am here")
 
-        if (filePath) {
+        if (req.file) {
+            const filePath = req.file.path;
             response = await cloudinaryUpload(filePath);
         }
+        console.log("i am here2")
 
         const existUser = await userModel.findOne({ where: { email } });
 
         if (existUser) return res.status(400).json("user already exist");
 
-        const profileImg = response.secure_url || null;
+        const profileImg = response?.secure_url || null;
 
         const saltPassword = await bcrypt.genSalt(10);
 
