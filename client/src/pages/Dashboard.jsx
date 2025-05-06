@@ -73,12 +73,12 @@ const ChatApp = () => {
   // Enhanced socket initialization
   const initializeSocket = useCallback(async () => {
     try {
-      let currentToken = localStorage.getItem("token");
+      // let currentToken = localStorage.getItem("token");
       
-      // Verify and refresh token if needed
-      if (!currentToken) {
-        currentToken = await fetchTokenWithRetry();
-      }
+      // // Verify and refresh token if needed
+      // if (!currentToken) {
+      //   currentToken = await fetchTokenWithRetry();
+      // }
 
       // Disconnect existing socket if any
       if (socketRef.current) {
@@ -86,12 +86,12 @@ const ChatApp = () => {
       }
 
       // Initialize new socket connection
-      socketRef.current = io(API_CONFIG.chatUrl, {
-        extraHeaders: {
-          Authorization: `Bearer ${token}`,
-        },
-        withCredentials: true,
-      });
+      // socketRef.current = io(API_CONFIG.chatUrl, {
+      //   extraHeaders: {
+      //     Authorization: `Bearer ${token}`,
+      //   },
+      //   withCredentials: true,
+      // });
 
       // Socket event handlers
       socketRef.current.on("connect", () => {
@@ -308,7 +308,7 @@ console.log(token, activeChat.id)
       await axios.get(`${API_CONFIG.baseUrl}/auth/logout`, {
         withCredentials: true,
       });
-      localStorage.removeItem("token");
+      await localStorage.removeItem("token");
       navigate("/login");
       toast.success("Logged out successfully");
     } catch (error) {

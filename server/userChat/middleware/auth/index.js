@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 module.exports.socketAuth = (socket, next) => {
     try {
         const headers = socket.handshake.headers;
+        
         let token;
         if (headers.authorization) {
 
