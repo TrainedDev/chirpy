@@ -45,14 +45,14 @@ const io = new Server(server, {
 
 app.use("/user", chatRoutes);
 
-// io.use(auth.socketAuth);
+io.use(auth.socketAuth);
 
 io.on("connection", (socket) => {
-    console.log("new client connected");
+    console.log("new client connected", socket.userId);
 
     socket.on("messages", async (data) => {
-        const { receiverId, message, senderId } = data
-        // const senderId = socket.userId;
+        const { receiverId, message } = data
+        const senderId = socket.userId;
         console.log(data, senderId)
         if (!senderId || !receiverId) return socket.emit("not-found", "required details not found");
         if (!message) return socket.emit("empty-msg", "empty message cannot be send");
